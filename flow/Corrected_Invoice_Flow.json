@@ -1,0 +1,145 @@
+{
+    "name": "Paid Invoice Automation - Final",
+    "nodes": [
+        {
+            "parameters": {},
+            "type": "n8n-nodes-base.manualTrigger",
+            "typeVersion": 1,
+            "position": [
+                0,
+                0
+            ],
+            "id": "5b50e670-7934-4dd1-9bf1-53c15796aabc",
+            "name": "Start"
+        },
+        {
+            "parameters": {
+                "authentication": "serviceAccount",
+                "documentId": {
+                    "__rl": true,
+                    "value": "1Qu-zBmB1s71BjODc31cfT66FmpnT8I22CpHnd4clBxk",
+                    "mode": "list",
+                    "cachedResultName": "Paid inovice",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qu-zBmB1s71BjODc31cfT66FmpnT8I22CpHnd4clBxk/edit?usp=drivesdk"
+                },
+                "sheetName": {
+                    "__rl": true,
+                    "value": "gid=0",
+                    "mode": "list",
+                    "cachedResultName": "Sheet1",
+                    "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Qu-zBmB1s71BjODc31cfT66FmpnT8I22CpHnd4clBxk/edit#gid=0"
+                },
+                "options": {}
+            },
+            "type": "n8n-nodes-base.googleSheets",
+            "typeVersion": 4.7,
+            "position": [
+                220,
+                0
+            ],
+            "id": "05eab8b9-46ce-4258-8abf-dba0e2154eb5",
+            "name": "Get Row Data",
+            "credentials": {
+                "googleApi": {
+                    "id": "bSVhjWFzw9awsRwz",
+                    "name": "Google Service Account account"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "jsCode": "const items = $input.all();\nconst grouped = {};\n\nconst getVal = (row, ...options) => {\n    const keys = Object.keys(row);\n    for (const opt of options) {\n        const match = keys.find(k => k.toLowerCase().trim() === opt.toLowerCase().trim());\n        if (match) return row[match];\n    }\n    return null;\n};\n\nitems.forEach((item, index) => {\n    const row = item.json;\n    const paidBy = getVal(row, 'Pa name', 'Father name (paid by)', 'Paid by');\n    const stdName = getVal(row, 'Std Name', 'Student name');\n    const regNo = getVal(row, 'Reg No', 'Reg No(Gr No)');\n    const amountRaw = getVal(row, 'Amount sar', 'Amount');\n    const paidIn = getVal(row, 'paid in', 'Month');\n    const grade = getVal(row, 'Grade');\n\n    if (!paidBy) return;\n\n    if (!grouped[paidBy]) {\n        grouped[paidBy] = {\n            \"Paid by\": paidBy,\n            \"Date\": new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-'),\n            \"Month\": paidIn || \"Current\",\n            \"Receipt No\": Math.floor(1000 + Math.random() * 9000),\n            \"Students\": [],\n            \"Total Amount\": 0\n        };\n    }\n\n    const amount = parseFloat(String(amountRaw || 0).replace(/[^0-9.-]+/g,\"\")) || 0;\n    const particular = `Monthly Fee (${paidIn || 'N/A'}) | Grade: ${grade || 'N/A'}`;\n\n    grouped[paidBy].Students.push({\n        \"Gr No\": regNo || \"N/A\",\n        \"Student Name\": stdName || \"N/A\",\n        \"Particular\": particular,\n        \"Amount\": amount\n    });\n\n    grouped[paidBy][\"Total Amount\"] += amount;\n});\n\nreturn Object.keys(grouped).map(key => ({ json: grouped[key] }));"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                440,
+                0
+            ],
+            "id": "a6a6bccc-8fe0-408f-a761-592cc5128d80",
+            "name": "Group Students by Parent"
+        },
+        {
+            "parameters": {
+                "url": "https://ivsmustafa.github.io/paidinvoice/",
+                "options": {}
+            },
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.3,
+            "position": [
+                660,
+                0
+            ],
+            "id": "849ac4b5-fb91-4c38-b94c-7db3819f4b60",
+            "name": "Get HTML Template"
+        },
+        {
+            "parameters": {
+                "jsCode": "const items = $input.all();\nconst finalItems = [];\n\nfor (let i = 0; i < items.length; i++) {\n    const item = items[i];\n    let html = (typeof item.json === 'string') ? item.json : (item.json.data || JSON.stringify(item.json));\n    \n    // Get consistent data from the grouping node\n    const data = $node[\"Group Students by Parent\"].json;\n\n    if (!data || !data.Students) continue;\n\n    let tableRows = \"\";\n    data.Students.forEach(student => {\n        tableRows += `<tr><td>${student[\"Gr No\"]}</td><td>${student[\"Student Name\"]}</td><td>${student[\"Particular\"]}</td><td>SAR ${student[\"Amount\"]}</td></tr>`;\n    });\n\n    html = html.replace('{{RECEIPT_NO}}', data[\"Receipt No\"])\n               .replace('{{MONTH}}', data[\"Month\"])\n               .replace('{{STATUS}}', \"Paid\")\n               .replace('{{PAID_BY}}', data[\"Paid by\"])\n               .replace('{{DATE}}', data[\"Date\"])\n               .replace('{{TABLE_ROWS}}', tableRows)\n               .replace('{{TOTAL_AMOUNT}}', data[\"Total Amount\"]);\n\n    finalItems.push({\n        json: {\n            \"fileName\": `Invoice_${data[\"Paid by\"].replace(/\\\\s+/g, '_')}.pdf`,\n            \"html_content\": html\n        }\n    });\n}\n\nreturn finalItems;"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                880,
+                0
+            ],
+            "id": "b9a6dcf8-e7c1-4b72-a4f1-5ed2c938a1b2",
+            "name": "Generate Final HTML"
+        }
+    ],
+    "pinData": {},
+    "connections": {
+        "Start": {
+            "main": [
+                [
+                    {
+                        "node": "Get Row Data",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get Row Data": {
+            "main": [
+                [
+                    {
+                        "node": "Group Students by Parent",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Group Students by Parent": {
+            "main": [
+                [
+                    {
+                        "node": "Get HTML Template",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Get HTML Template": {
+            "main": [
+                [
+                    {
+                        "node": "Generate Final HTML",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "active": false,
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "meta": {
+        "templateCredsSetupCompleted": true,
+        "instanceId": "e4e192a5efe02419c86ca630b1642d730b1660531096cb0dc97493e460e27a85"
+    }
+}
