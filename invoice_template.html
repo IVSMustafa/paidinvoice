@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fee Receipt</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            font-size: 14px;
+        }
+        .container {
+            width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .header-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        .title-section {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .title-section h1 {
+            color: #17365d;
+            font-size: 28px;
+            margin: 5px 0;
+        }
+        .title-section h3 {
+            margin: 5px 0;
+            font-size: 18px;
+            color: #000;
+        }
+        .title-section p {
+            color: #900;
+            font-weight: bold;
+            margin: 5px 0;
+            font-size: 16px;
+        }
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            font-weight: bold;
+            font-size: 15px;
+        }
+        .info-section .left span, .info-section .right span {
+            display: block;
+            margin-bottom: 5px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th {
+            background-color: #7b1e2c;
+            color: #fff;
+            padding: 10px;
+            text-align: left;
+            font-weight: bold;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .total-row {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .total-row td {
+            border-bottom: none;
+            padding-top: 15px;
+        }
+        .total-label {
+            text-align: right;
+            padding-right: 20px;
+        }
+        .paid-stamp {
+            text-align: center;
+            margin: 20px 0;
+        }
+        .paid-stamp img {
+            width: 150px;
+            opacity: 0.8;
+        }
+        .payment-info {
+            background-color: #7b1e2c;
+            color: #fff;
+            padding: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 30px;
+        }
+        .payment-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin-top: 10px;
+            line-height: 1.4;
+        }
+        .payment-details .col {
+            flex: 1;
+        }
+        .qr-code {
+            text-align: center;
+        }
+        .qr-code img {
+            width: 80px;
+            margin-bottom: 5px;
+        }
+        .instructions {
+            margin-top: 30px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .instructions h4 {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        .instructions ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .instructions ul li::before {
+            content: "✓ ";
+            color: red;
+            font-weight: bold;
+        }
+        .signature-section {
+            position: absolute;
+            bottom: -50px;
+            right: 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .signature-section img {
+            width: 150px;
+            display: block;
+            margin: 0 auto;
+        }
+        .footer-banner {
+            width: 100%;
+            height: 30px;
+            background-color: #7b1e2c;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Image Full Width -->
+        <img src="file:///C:/Users/DELL/Desktop/paid invoice template/templates/Header.jpg" alt="Header" class="header-image" />
+
+        <div class="title-section">
+            <h1>FEE RECEIPT</h1>
+            <h3>Receipt No.{{RECEIPT_NO}}</h3>
+            <p>Month: {{MONTH}} | Status: {{STATUS}}</p>
+        </div>
+
+        <div class="info-section">
+            <div class="left">
+                <span>Paid by:</span>
+                <span style="font-size: 18px;">{{PAID_BY}}</span>
+            </div>
+            <div class="right" style="text-align: right;">
+                <span>Payment Received on:</span>
+                <span style="font-size: 18px;">{{DATE}}</span>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>GR No</th>
+                    <th>Student Name</th>
+                    <th>Particular</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{TABLE_ROWS}}
+            </tbody>
+            <tfoot>
+                <tr class="total-row">
+                    <td colspan="3" class="total-label">Total</td>
+                    <td>SAR {{TOTAL_AMOUNT}}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <!-- Paid Stamp Image -->
+        <div class="paid-stamp">
+            <img src="file:///C:/Users/DELL/Desktop/paid invoice template/templates/Paid stamp.png" alt="Paid Stamp" />
+        </div>
+
+        <div class="payment-info">
+            Payment Information
+        </div>
+
+        <div class="payment-details">
+            <div class="col">
+                Account Title: IQRA VIRTUAL SOLUTIONS<br>
+                Account IBAN: PK?? (International Transfers)<br>
+                Account No: 0791011138778 (Local Transfers)<br>
+                Bank Code: 0781<br>
+                Bank Address: Meezan Bank Peshawar (Khyber Bazar Branch)<br>
+                Contact: +92 303 524 5551
+            </div>
+            <div class="col">
+                Account Title: IVS Global<br>
+                Bank Name: Mashreq Bank<br>
+                IBAN: AE??<br>
+                Account Number: 091014055931<br>
+                Beneficiary: IVS<br>
+                Ajman Industrial Area 2, Ajman, UAE
+            </div>
+            <div class="col qr-code">
+                PayPal Account<br>
+                <!-- Scan to Pay Image -->
+                <img src="file:///C:/Users/DELL/Desktop/paid invoice template/templates/Scan to pay.jpg" alt="Scan to Pay QR" /><br>
+                paypal.me/ivs2015<br>
+                SCAN TO PAY
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h4>Instructions:</h4>
+            <ul>
+                <li>This is a reminder from the Accounts Department of Iqra Virtual School. To ensure accurate verification of your fee payment, we kindly request you to fill out the fee receipt submission form:<br>
+                <a href="https://forms.gle/W6y3Q1VjUy8cRDvp7">https://forms.gle/W6y3Q1VjUy8cRDvp7</a></li>
+                <li>Kindly fill out all the required information in the provided link accurately.</li>
+                <li>If you do not receive the paid slip from the school within 72 hours, kindly contact the Accounts Department.</li>
+                <li>Please note that if the fee payment was initially rejected by the bank and subsequently refunded, it will not be considered as paid.</li>
+            </ul>
+            <p>For any queries, feel free to contact the Accounts Department.</p>
+        </div>
+
+        <div class="signature-section">
+            <img src="file:///C:/Users/DELL/Desktop/paid invoice template/templates/Stamp and signature.jpg" alt="Signature" />
+            <br>
+            Account Manager IVS
+        </div>
+        
+        <div style="clear:both;"></div>
+    </div>
+</body>
+</html>
